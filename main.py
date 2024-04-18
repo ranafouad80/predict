@@ -9,6 +9,7 @@ app = FastAPI()
 # Load model and encoder
 model = joblib.load("model.joblib")
 encoder = joblib.load("encoder.joblib")
+categorical_cols = ['الشعبة',"الوقت"]
 
 # Define request body model
 class PredictionRequest(BaseModel):
@@ -19,8 +20,8 @@ class PredictionRequest(BaseModel):
     ضعيف_لغه_عربيه: int = Field(..., title="ضعيف لغه عربيه")
     ضعيف_لغه_انجليزيه: int = Field(..., title="ضعيف لغه انجليزيه")
     ضعيف_لغه_تانيه: int = Field(..., title="ضعيف لغه تانيه")
-    ضعيف_كيمياء: int = Field(..., title="ضعيف كيمياء")
-    ضعيف_فيزياء: int = Field(..., title="ضعيف فيزياء")
+    ضعيف_كيمياء: int = Field(..., title="ضعيف  كيمياء")
+    ضعيف_فيزياء: int = Field(..., title="ضعيف  فيزياء")
     ضعيف_احياء: int = Field(..., title="ضعيف احياء")
     ضعيف_جيولوجيا: int = Field(..., title="ضعيف جيولوجيا")
     ضعيف_رياضيات_باحتة: int = Field(..., title="ضعيف رياضيات باحتة")
@@ -30,19 +31,26 @@ class PredictionRequest(BaseModel):
     ضعيف_جغرافيا: int = Field(..., title="ضعيف جغرافيا")
     ضعيف_فلسفة_ومنطق: int = Field(..., title="ضعيف فلسفة ومنطق")
 
+
 # Define prediction route
 @app.post("/predict/")
 async def predict(data: PredictionRequest):
     try:
         data_dict = data.dict()
-        new_data_df = pd.DataFrame([data_dict])
+        new_key_mapping = {key: key.replace('_', ' ') for key, value in data_dict.items()}
+        new_key_mapping['ضعيف_فيزياء']= 'ضعيف  فيزياء'
+        new_key_mapping['ضعيف_كيمياء']= 'ضعيف  كيمياء'
+    # print(data_dict.items())
 
+        updated_dict = {new_key_mapping.get(k): v for k, v in data_dict.items()}
+        df = pd.DataFrame([updated_dict])
         # One-hot encode the new data using the saved encoder
-        one_hot_encoded_new_data = encoder.transform(new_data_df)
-        new_data_df = pd.DataFrame(one_hot_encoded_new_data, columns=encoder.get_feature_names_out())
+        one_hot_encoded_new_data = encoder.transform(df[categorical_cols])
+        one_hot_encoded_df = pd.DataFrame(one_hot_encoded_new_data, columns=encoder.get_feature_names_out())
+        df = pd.concat([df.drop(columns=categorical_cols), one_hot_encoded_df], axis=1)
 
         # Make predictions on the new data using the saved model
-        new_predictions = model.predict(new_data_df)
+        new_predictions = model.predict(df)
 
         # Output prediction
         return {"predictions": new_predictions.tolist()}
