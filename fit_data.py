@@ -8,6 +8,7 @@ def train_and_save_model(excel_file, model_file, encoder_file):
     df = pd.read_excel(excel_file)
 
     # Preprocessing (handle missing values, one-hot encode categorical variables, etc.)
+    categorical_cols = ['الشعبة',"الوقت"]
     categorical_cols = [col for col in df.columns if df[col].dtype == 'object']
     one_hot_encoder = OneHotEncoder(sparse=False, handle_unknown='ignore')
     one_hot_encoded = one_hot_encoder.fit_transform(df[categorical_cols])
