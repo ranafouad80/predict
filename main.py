@@ -194,7 +194,9 @@ def print_case_eleven():
         ["حل رياضيات تطبيقيه", "حل لغه تانيه", "لغه انجليزيه", "كيمياء"],
         ["حل فيزياء", "حل رياضيات باحته", "حل لغه انجليزيه", "حل كيمياء"]
     ]
-    return tabulate(data, headers=["Time Period 1", "Time Period 2", "Time Period 3", "Time Period 4", "Day"], tablefmt="pretty")
+    headers = data[0]  # Use the first row as headers
+    data = data[1:]    # Remove the first row from the data
+    return tabulate(data, headers=headers, tablefmt="grid", stralign="center", numalign="center")
 # Function to print table for case 12
 def print_case_twelve():
     data = [
@@ -329,7 +331,8 @@ def print_case_twenty():
     ]
     headers = data[0]  # Use the first row as headers
     data = data[1:]    # Remove the first row from the data
-    return tabulate(data, headers=headers, tablefmt="grid", stralign="center", numalign="center")# Function to print table for case 21
+    return tabulate(data, headers=headers, tablefmt="grid", stralign="center", numalign="center")
+ # Function to print table for case 21
 def print_case_twenty_one():
     data = [
         ["1.5:3.5", "11:1", "8.5:10.5", "6:8"],
